@@ -20,45 +20,29 @@
     </div>
 
     <script>
-        const API_TOKEN = '7344204668:AAE5JhEi4chHTpHjtit4HMPNY4U3JCSnJiY'; // Your Telegram Bot API token
-        const getUserInfoButton = document.getElementById('get-user-info');
-        const userInfoContainer = document.getElementById('user-info');
-
-        getUserInfoButton.addEventListener('click', () => {
-            // Get user ID from Telegram API
-            const userId = 'USER_ID_FROM_MESSAGE'; // Replace with the actual user ID (retrieved via webhook or bot interaction)
-
-            // Get user's profile information
-            fetch(`https://api.telegram.org/bot${API_TOKEN}/getUserProfilePhotos?user_id=${userId}`)
+        document.getElementById('get-user-info').addEventListener('click', function() {
+            // Make an API call to fetch the user info
+            fetch('user_info.php')
                 .then(response => response.json())
                 .then(data => {
-                    if (data.ok && data.result.total_count > 0) {
-                        const profilePicUrl = data.result.photos[0][0].file_id;
-                        document.getElementById('user-profile-pic').src = `https://api.telegram.org/bot${API_TOKEN}/getFile?file_id=${profilePicUrl}`;
+                    if (data.success) {
+                        // Display user info
+                        document.getElementById('user-name').textContent = data.name;
+                        document.getElementById('user-username').textContent = data.username;
+                        document.getElementById('user-id').textContent = data.user_id;
+                        document.getElementById('is-premium').textContent = data.is_premium ? 'Yes' : 'No';
+                        document.getElementById('user-profile-pic').src = data.profile_picture;
+
+                        // Assuming the group info is an array of group names
+                        document.getElementById('joined-groups').textContent = data.groups.join(', ');
+
+                        document.getElementById('user-info').style.display = 'block';
                     } else {
-                        alert('No profile picture found!');
+                        alert('No data found');
                     }
-                });
-
-            // Get user information (username, name, etc.)
-            fetch(`https://api.telegram.org/bot${API_TOKEN}/getChatMember?chat_id=<Chat-ID>&user_id=${userId}`)
-                .then(response => response.json())
-                .then(data => {
-                    const userData = data.result.user;
-                    displayUserInfo(userData);
                 })
-                .catch(error => console.error('Error fetching user data:', error));
+                .catch(err => console.error('Error:', err));
         });
-
-        function displayUserInfo(userData) {
-            document.getElementById('user-name').textContent = userData.first_name || 'N/A';
-            document.getElementById('user-username').textContent = userData.username || 'N/A';
-            document.getElementById('user-id').textContent = userData.id || 'N/A';
-            document.getElementById('is-premium').textContent = userData.is_premium ? 'Yes' : 'No';
-            document.getElementById('joined-groups').textContent = 'Groups data can be fetched with additional APIs'; // Placeholder for group info
-
-            userInfoContainer.style.display = 'block';
-        }
     </script>
 </body>
 </html>
