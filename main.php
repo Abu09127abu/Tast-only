@@ -1,27 +1,30 @@
 <?php
 $API_TOKEN = '7344204668:AAE5JhEi4chHTpHjtit4HMPNY4U3JCSnJiY'; // আপনার টেলিগ্রাম বট টোকেন
-$user_id = 'USER_ID'; // এখানে ব্যবহারকারীর টেলিগ্রাম আইডি দিন
+$webhook_url = 'https://yourdomain.com/bot.php'; // আপনার সার্ভারের URL
 
-// টেলিগ্রাম API থেকে ব্যবহারকারীর প্রোফাইল ছবি এবং তথ্য নিয়ে আসুন
-$url = "https://api.telegram.org/bot$API_TOKEN/getUserProfilePhotos?user_id=$user_id";
-$response = file_get_contents($url);
-$data = json_decode($response, true);
+// Webhook সেট করতে
+file_get_contents("https://api.telegram.org/bot$API_TOKEN/setWebhook?url=$webhook_url");
 
-// ব্যবহারকারীর তথ্য এবং ছবি
-if ($data['ok']) {
-    $profile_pic_url = "https://api.telegram.org/file/bot$API_TOKEN/" . $data['result']['photos'][0][0]['file_id']; // প্রথম ছবি থেকে URL নিচ্ছে
-    $response_data = [
-        'success' => true,
-        'name' => 'User Name', // এখানে প্রকৃত নাম নিবেন
-        'username' => 'User Name', // এখানে প্রকৃত ইউজারনেম নিবেন
-        'user_id' => $user_id,
-        'is_premium' => false, // এটি টেলিগ্রাম API দ্বারা সরাসরি পাওয়া যাবে না, তবে আপনার বটের মাধ্যমে চেক করতে পারেন
-        'profile_picture' => $profile_pic_url,
-        'groups' => ['Group 1', 'Group 2'] // এখানে গ্রুপের নামের তালিকা থাকবে
-    ];
-} else {
-    $response_data = ['success' => false];
+$content = file_get_contents("php://input");
+$update = json_decode($content, true);
+
+// যদি কোনো নতুন মেসেজ পাওয়া যায়
+if (isset($update["message"])) {
+    $chat_id = $update["message"]["chat"]["id"];
+    $first_name = $update["message"]["chat"]["first_name"];
+    $last_name = $update["message"]["chat"]["last_name"];
+    $user_name = $update["message"]["chat"]["username"];
+    $user_id = $update["message"]["chat"]["id"];
+    
+    // স্বাগতম মেসেজ পাঠানো
+    $text = "Welcome, $first_name $last_name! Your Username: @$user_name, Your User ID: $user_id.";
+    sendMessage($chat_id, $text);
 }
 
-echo json_encode($response_data);
+// ফাংশন ব্যবহারকারীর কাছে মেসেজ পাঠানোর জন্য
+function sendMessage($chat_id, $message) {
+    global $API_TOKEN;
+    $url = "https://api.telegram.org/bot$API_TOKEN/sendMessage?chat_id=$chat_id&text=" . urlencode($message);
+    file_get_contents($url);
+}
 ?>
