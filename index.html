@@ -5,44 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Telegram User Info</title>
     <link rel="stylesheet" href="styles.css">
+    <script type="module" src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js"></script>
 </head>
 <body>
-    <h2>Get My Telegram Info</h2>
-    <button id="get-user-info">Get My Info</button>
-    
-    <div id="user-info" style="display:none;">
-        <h3>Profile Information</h3>
-        <img id="user-profile-pic" width="100" height="100" src="" alt="Profile Picture">
-        <p><strong>Name:</strong> <span id="user-name"></span></p>
-        <p><strong>Username:</strong> <span id="user-username"></span></p>
-        <p><strong>Telegram ID:</strong> <span id="user-id"></span></p>
-        <p><strong>Premium User:</strong> <span id="is-premium"></span></p>
-        <p><strong>Joined Groups:</strong> <span id="joined-groups"></span></p>
+    <div class="container">
+        <h2>Your Telegram Information</h2>
+        <button id="get-user-info">Get My Info</button>
+        <div id="user-info" style="display:none;">
+            <img id="user-photo" width="100" height="100" src="" alt="User Photo">
+            <p><strong>Name:</strong> <span id="user-name"></span></p>
+            <p><strong>Username:</strong> <span id="user-username"></span></p>
+            <p><strong>User ID:</strong> <span id="user-id"></span></p>
+            <p><strong>Telegram Premium:</strong> <span id="is-premium"></span></p>
+            <p><strong>Friend Count:</strong> <span id="friend-count"></span></p>
+            <p><strong>Account Age:</strong> <span id="account-age"></span></p>
+        </div>
     </div>
 
     <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAsyGiZ8R2QReR5ptT2lmnS8QEwZunxveA",
+            authDomain: "ab-coin-main-game.firebaseapp.com",
+            databaseURL: "https://ab-coin-main-game-default-rtdb.firebaseio.com",
+            projectId: "ab-coin-main-game",
+            storageBucket: "ab-coin-main-game.firebasestorage.app",
+            messagingSenderId: "353294390131",
+            appId: "1:353294390131:web:b57b57a2907e5d3a4aeb06"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
         document.getElementById('get-user-info').addEventListener('click', function() {
-            // Send AJAX request to PHP/Python to get user info
-            fetch('user_info.php') // This file will return JSON data
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Display user info
-                        document.getElementById('user-name').textContent = data.name;
-                        document.getElementById('user-username').textContent = data.username;
-                        document.getElementById('user-id').textContent = data.user_id;
-                        document.getElementById('is-premium').textContent = data.is_premium ? 'Yes' : 'No';
-                        document.getElementById('user-profile-pic').src = data.profile_picture;
+            const user_id = prompt("Enter your Telegram user ID");
 
-                        // Assuming the group info is an array of group names
-                        document.getElementById('joined-groups').textContent = data.groups.join(', ');
+            // Fetch user data from Firebase
+            const userRef = database.ref('users/' + user_id);
+            userRef.once('value', (snapshot) => {
+                const userData = snapshot.val();
 
-                        document.getElementById('user-info').style.display = 'block';
-                    } else {
-                        alert('No data found');
+                if (userData) {
+                    document.getElementById('user-name').textContent = `${userData.first_name} ${userData.last_name}`;
+                    document.getElementById('user-username').textContent = userData.username;
+                    document.getElementById('user-id').textContent = userData.user_id;
+                    document.getElementById('is-premium').textContent = userData.is_premium ? 'Yes' : 'No';
+                    document.getElementById('friend-count').textContent = userData.friend_count;
+                    document.getElementById('account-age').textContent = userData.account_age;
+
+                    // If a photo exists, show it
+                    if (userData.photo) {
+                        document.getElementById('user-photo').src = userData.photo;
                     }
-                })
-                .catch(err => console.error('Error:', err));
+
+                    document.getElementById('user-info').style.display = 'block';
+                } else {
+                    alert('No data found for this user');
+                }
+            });
         });
     </script>
 </body>
