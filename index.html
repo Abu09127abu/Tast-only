@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Telegram User Info</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="loading-screen">
+    <h3>Loading...</h3>
+  </div>
+
+  <div id="main-content" style="display: none;">
+    <h2>Welcome, <span id="username"></span>!</h2>
+    <img id="user-photo" alt="User Photo" width="150">
+    <p>ID: <span id="user-id"></span></p>
+    <p>Telegram Premium: <span id="premium-status"></span></p>
+    <p>Groups:</p>
+    <ul id="user-groups"></ul>
+  </div>
+
+  <script>
+    // Telegram Bot API token
+    const botToken = '7344204668:AAE5JhEi4chHTpHjtit4HMPNY4U3JCSnJiY';
+
+    // Load user info from Telegram API
+    async function loadUserInfo() {
+      // Assume the Telegram API sends the user data to your server
+      const userInfo = await fetch('/get-telegram-user-info')
+        .then(response => response.json())
+        .catch(error => {
+          console.error('Error loading user info:', error);
+          return null;
+        });
+
+      if (userInfo) {
+        document.getElementById('loading-screen').style.display = 'none';
+        document.getElementById('main-content').style.display = 'block';
+
+        document.getElementById('username').innerText = userInfo.username;
+        document.getElementById('user-photo').src = userInfo.photo;
+        document.getElementById('user-id').innerText = userInfo.id;
+        document.getElementById('premium-status').innerText = userInfo.isPremium ? 'Yes' : 'No';
+
+        const groupsList = document.getElementById('user-groups');
+        userInfo.groups.forEach(group => {
+          const li = document.createElement('li');
+          li.innerText = group;
+          groupsList.appendChild(li);
+        });
+      }
+    }
+
+    window.onload = loadUserInfo;
+  </script>
+</body>
+</html>
