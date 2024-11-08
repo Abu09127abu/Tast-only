@@ -5,13 +5,13 @@ $API_TOKEN = '7344204668:AAE5JhEi4chHTpHjtit4HMPNY4U3JCSnJiY';
 $user_id = $_GET['user_id']; // আপনি ব্যবহারকারীর ID গ্রহণ করবেন
 
 // টেলিগ্রাম API থেকে ব্যবহারকারীর প্রোফাইল তথ্য নিয়ে আসুন
-$url = "https://api.telegram.org/bot$API_TOKEN/getUserProfilePhotos?user_id=$user_id";
+$url = "https://api.telegram.org/bot$7344204668:AAE5JhEi4chHTpHjtit4HMPNY4U3JCSnJiY/getUserProfilePhotos?user_id=$user_id";
 $response = file_get_contents($url);
 $data = json_decode($response, true);
 
 // ব্যবহারকারীর তথ্য এবং ছবি
 if ($data['ok']) {
-    $profile_pic_url = "https://api.telegram.org/file/bot$API_TOKEN/" . $data['result']['photos'][0][0]['file_id']; // প্রথম ছবি
+    $profile_pic_url = "https://api.telegram.org/file/bot7344204668:AAE5JhEi4chHTpHjtit4HMPNY4U3JCSnJiY/" . $data['result']['photos'][0][0]['file_id']; // প্রথম ছবি
     $response_data = [
         'success' => true,
         'name' => 'User Name', // আপনি এই নামটি ব্যবহারকারীর নাম দিয়ে প্রতিস্থাপন করবেন
