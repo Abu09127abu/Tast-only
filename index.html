@@ -7,8 +7,9 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h2>Telegram User Info</h2>
+    <h2>Get My Telegram Info</h2>
     <button id="get-user-info">Get My Info</button>
+    
     <div id="user-info" style="display:none;">
         <h3>Profile Information</h3>
         <img id="user-profile-pic" width="100" height="100" src="" alt="Profile Picture">
@@ -21,8 +22,8 @@
 
     <script>
         document.getElementById('get-user-info').addEventListener('click', function() {
-            // Make an API call to fetch the user info
-            fetch('user_info.php')
+            // Send AJAX request to PHP/Python to get user info
+            fetch('user_info.php') // This file will return JSON data
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
