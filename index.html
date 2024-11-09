@@ -1,54 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AB Coin Game</title>
-    <link rel="stylesheet" href="style.css">
-    <script type="module" src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Telegram Mini App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .loading {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    li {
+      margin-bottom: 8px;
+    }
+  </style>
+  <script src="https://unpkg.com/@twa-dev/sdk@latest"></script>
 </head>
 <body>
-    <!-- Login Page -->
-    <div id="loginPage" class="page">
-        <h2>Login to AB Coin Game</h2>
-        <input type="text" id="username" placeholder="Username" />
-        <input type="password" id="password" placeholder="Password" />
-        <button onclick="login()">Login</button>
-        <p id="loginError" class="error"></p>
-    </div>
+  <div id="app">
+    <div class="loading">Loading...</div>
+  </div>
 
-    <!-- User Page -->
-    <div id="userPage" class="page" style="display: none;">
-        <div class="navbar">
-            <button onclick="navigateTo('home')">Home</button>
-            <button onclick="navigateTo('airdrop')">Airdrop</button>
-            <button onclick="navigateTo('task')">Task</button>
-        </div>
-        <div id="homePage" class="section">
-            <h2>Home Page</h2>
-            <img src="coin.png" alt="Coin" width="350" onclick="earnCoin()" />
-            <p>Click the coin to earn coins!</p>
-        </div>
-        <div id="airdropPage" class="section" style="display: none;">
-            <h2>Airdrop Page</h2>
-            <div id="leaderboard"></div>
-        </div>
-        <div id="taskPage" class="section" style="display: none;">
-            <h2>Task Page</h2>
-            <div id="taskList"></div>
-        </div>
-    </div>
+  <script>
+    // Wait for the DOM to fully load
+    document.addEventListener('DOMContentLoaded', () => {
+      const app = document.getElementById('app');
 
-    <!-- Admin Page -->
-    <div id="adminPage" class="page" style="display: none;">
-        <h2>Admin Dashboard</h2>
-        <button onclick="logout()">Logout</button>
-        <h3>Task Management</h3>
-        <button onclick="addTask()">Add Task</button>
-        <div id="adminTaskList"></div>
-    </div>
-
-    <script src="app.js"></script>
+      // Check if Telegram WebApp SDK is available
+      if (window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
+        const userData = window.Telegram.WebApp.initDataUnsafe.user;
+        
+        // Create user data display
+        app.innerHTML = `
+          <h1>User Data</h1>
+          <ul>
+            <li>ID: ${userData.id}</li>
+            <li>First Name: ${userData.first_name}</li>
+            <li>Last Name: ${userData.last_name || 'N/A'}</li>
+            <li>Username: ${userData.username || 'N/A'}</li>
+            <li>Language Code: ${userData.language_code}</li>
+            <li>Is Premium: ${userData.is_premium ? 'Yes' : 'No'}</li>
+          </ul>
+        `;
+      } else {
+        // If user data is not available, display a message
+        app.innerHTML = '<div class="loading">User data not found.</div>';
+      }
+    });
+  </script>
 </body>
 </html>
