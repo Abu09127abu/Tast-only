@@ -1,169 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AB Coin Page</title>
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            background-color: black;
-            color: white;
-            font-family: Arial, sans-serif;
-        }
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 20px;
-            background-color: #222;
-            border-radius: 0 0 20px 20px;
-        }
-        .top-bar h1 {
-            margin: 0;
-            font-size: 20px;
-        }
-        .user-info {
-            display: flex;
-            align-items: center;
-        }
-        .user-info img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            margin-left: 10px;
-        }
-        .coin-box {
-            text-align: center;
-            margin: 20px;
-            padding: 20px;
-            background-color: #333;
-            border-radius: 20px;
-        }
-        .coin-box img {
-            width: 150px;
-            height: 150px;
-        }
-        .coin-count {
-            font-size: 40px;
-            margin: 10px 0;
-        }
-        .coin-text {
-            font-size: 24px;
-            margin-bottom: 20px;
-        }
-        .tasks {
-            text-align: center;
-            margin: 20px;
-            padding: 20px;
-            background-color: #333;
-            border-radius: 20px;
-        }
-        .tasks h3 {
-            margin-bottom: 20px;
-            font-size: 18px;
-        }
-        .task-item {
-            margin: 10px 0;
-            padding: 10px;
-            background-color: #444;
-            border-radius: 10px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AB Coin Page</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      background-color: black;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+
+    /* Top bar styling */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #222;
+      padding: 10px 20px;
+      border-radius: 0 0 20px 20px;
+    }
+
+    .top-bar h1 {
+      margin: 0;
+      font-size: 20px;
+      color: white;
+    }
+
+    .user-icon {
+      width: 40px;
+      height: 40px;
+      background-image: url('user.png');
+      background-size: cover;
+      background-position: center;
+      border-radius: 50%;
+    }
+
+    /* Main content styling */
+    .main-content {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .main-content img {
+      width: 150px;
+      height: 150px;
+    }
+
+    .coin-count {
+      font-size: 40px;
+      margin: 10px 0;
+    }
+
+    .task-section {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .task-section h3 {
+      margin: 10px 0;
+    }
+  </style>
 </head>
 <body>
 
-    <!-- Top Bar -->
-    <div class="top-bar">
-        <h1>Welcome, <span id="telegramName">User</span></h1>
-        <div class="user-info">
-            <span id="telegramNameDisplay"></span>
-            <img src="user.png" alt="User">
-        </div>
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <h1 id="user-name">Welcome</h1>
+    <div class="user-icon"></div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <img src="coin.png" alt="Coin">
+    <div class="coin-count" id="coin-count">0</div>
+    <div>AB Coin</div>
+  </div>
+
+  <!-- Task Section -->
+  <div class="task-section">
+    <h3>Complete all tasks</h3>
+    <div id="tasks">
+      <!-- Tasks will be dynamically loaded here -->
     </div>
+  </div>
 
-    <!-- Coin Box -->
-    <div class="coin-box">
-        <img src="coin.png" alt="Coin">
-        <div class="coin-count" id="coinCount">0</div>
-        <div class="coin-text">AB Coin</div>
-    </div>
+  <script type="module">
+    // Import Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
-    <!-- Task Section -->
-    <div class="tasks">
-        <h3>Complete all tasks</h3>
-        <div id="taskList">
-            <!-- Task items will be added dynamically -->
-        </div>
-    </div>
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyC4tXjp6yj6W7JD5jC3mRxVYHcmjiZZHGM",
+      authDomain: "ab-coin-695f3.firebaseapp.com",
+      databaseURL: "https://ab-coin-695f3-default-rtdb.firebaseio.com",
+      projectId: "ab-coin-695f3",
+      storageBucket: "ab-coin-695f3.appspot.com",
+      messagingSenderId: "373438391512",
+      appId: "1:373438391512:web:b7f29d02587d48c130a3ad"
+    };
 
-    <script type="module">
-        // Import Firebase SDKs
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-        import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyC4tXjp6yj6W7JD5jC3mRxVYHcmjiZZHGM",
-            authDomain: "ab-coin-695f3.firebaseapp.com",
-            databaseURL: "https://ab-coin-695f3-default-rtdb.firebaseio.com",
-            projectId: "ab-coin-695f3",
-            storageBucket: "ab-coin-695f3.appspot.com",
-            messagingSenderId: "373438391512",
-            appId: "1:373438391512:web:b7f29d02587d48c130a3ad"
-        };
+    // Display Telegram Real Name
+    const urlParams = new URLSearchParams(window.location.search);
+    const tgName = urlParams.get('tgName'); // Get the Telegram name from the query parameters
+    const userNameElement = document.getElementById('user-name');
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+    if (tgName) {
+      userNameElement.textContent = `Hello, ${tgName}`;
+      // Save Telegram name to Firebase
+      const userRef = ref(db, `users/${tgName}`);
+      set(userRef, {
+        name: tgName,
+        abcoin: 0
+      });
+    }
 
-        // Set Telegram user's name and show AB Coin count
-        const telegramName = new URLSearchParams(window.location.search).get("tgName");
-        const telegramId = new URLSearchParams(window.location.search).get("tgId");
+    // Display Coin Count from Local Storage
+    const coinCountElement = document.getElementById('coin-count');
+    const coins = localStorage.getItem('abcoin') || 0;
+    coinCountElement.textContent = coins;
 
-        // Display Telegram name
-        const nameDisplay = document.getElementById('telegramName');
-        const nameDisplayTop = document.getElementById('telegramNameDisplay');
-        if (telegramName) {
-            nameDisplay.textContent = telegramName;
-            nameDisplayTop.textContent = telegramName;
-        }
+    // Dynamically Load Tasks
+    const tasksContainer = document.getElementById('tasks');
+    const tasks = ['Task 1', 'Task 2', 'Task 3']; // Replace with dynamic Firebase data if needed
+    tasks.forEach((task, index) => {
+      const taskItem = document.createElement('div');
+      taskItem.textContent = `${index + 1}. ${task}`;
+      tasksContainer.appendChild(taskItem);
+    });
+  </script>
 
-        // Load and display AB Coin from localStorage or Firebase
-        const coinCountElement = document.getElementById('coinCount');
-        const localCoin = localStorage.getItem('abcoin');
-
-        if (localCoin) {
-            coinCountElement.textContent = localCoin;
-        } else {
-            // If no local coin found, fetch from Firebase
-            if (telegramId) {
-                const userRef = ref(db, 'users/' + telegramId);
-                get(userRef).then((snapshot) => {
-                    if (snapshot.exists()) {
-                        const userData = snapshot.val();
-                        coinCountElement.textContent = userData.abcoin || 0;
-                        localStorage.setItem('abcoin', userData.abcoin || 0);
-                    }
-                });
-            }
-        }
-
-        // Dynamically load tasks
-        const taskList = document.getElementById('taskList');
-        const tasksRef = ref(db, 'tasks/');
-        get(tasksRef).then((snapshot) => {
-            if (snapshot.exists()) {
-                const tasks = snapshot.val();
-                for (const taskId in tasks) {
-                    const taskItem = document.createElement('div');
-                    taskItem.classList.add('task-item');
-                    taskItem.textContent = tasks[taskId].name;
-                    taskList.appendChild(taskItem);
-                }
-            }
-        });
-    </script>
 </body>
 </html>
