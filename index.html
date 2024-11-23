@@ -2,97 +2,138 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Claim AB Coin</title>
+    <title>AB Coin Claim</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: white;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
             height: 100vh;
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            overflow: hidden;
         }
-
-        #coin-img {
+        #coin {
             width: 150px;
             height: 150px;
-            margin-bottom: 20px;
+            margin: 20px 0;
         }
-
-        #loading-dots {
+        #loading-bar {
+            width: 100px;
+            height: 10px;
+            background-color: #444;
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+            margin: 20px 0;
+        }
+        #loading-bar div {
+            height: 100%;
+            background-color: #fff;
+            animation: loading 7s linear;
+            width: 0;
+        }
+        @keyframes loading {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+        #abcoin-display {
             font-size: 24px;
-            margin-bottom: 20px;
+            margin: 20px 0;
         }
-
-        #claim-button {
-            padding: 10px 20px;
+        .claim-btn {
             background-color: white;
             color: black;
-            border: 2px solid #000;
-            cursor: pointer;
-            font-size: 18px;
+            padding: 10px 20px;
+            border: none;
             border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
         }
-
-        #claim-button:hover {
-            background-color: #f0f0f0;
+        .claim-btn:active {
+            transform: scale(0.98);
+        }
+        #error-message {
+            font-size: 18px;
+            color: red;
+            text-align: center;
         }
     </style>
 </head>
 <body>
-    <h1>Claim Your AB Coin</h1>
-    <img id="coin-img" src="coin.png" alt="Coin">
-    <div id="loading-dots">Loading...</div>
-    <p>Your AB Coin: <span id="abcoin">0</span></p>
-    <button id="claim-button" style="display:none;">Claim</button>
+    <img id="coin" src="coin.png" alt="Coin" style="display: none;">
+    <div id="loading-bar" style="display: none;"><div></div></div>
+    <div id="abcoin-display" style="display: none;"></div>
+    <button id="claim-btn" class="claim-btn" style="display: none;">Claim</button>
+    <div id="error-message"></div>
 
     <script>
         window.Telegram.WebApp.ready();
-
         const user = window.Telegram.WebApp.initDataUnsafe.user;
         let abcoin = 0;
 
-        if (user) {
-            // Calculate AB Coin based on user data
-            abcoin += user.first_name.length + (user.last_name ? user.last_name.length : 0);
+        if (!user) {
+            // If user data is not available, show an error message
+            document.getElementById("error-message").innerText = "User not found. Please open this page from Telegram.";
+        } else {
+            // Save user data to localStorage
+            const userData = {
+                first_name: user.first_name || "",
+                last_name: user.last_name || "",
+                username: user.username || "",
+                id: user.id || "",
+                is_premium: user.is_premium || false,
+            };
+            localStorage.setItem("telegram_user", JSON.stringify(userData));
 
-            // If the user has Telegram Premium, add 2000 AB Coins
-            if (user.is_premium) {
-                abcoin += 2000;
+            // Show UI elements
+            document.getElementById("coin").style.display = "block";
+            document.getElementById("loading-bar").style.display = "block";
+
+            // Calculate AB Coins
+            function calculateCoins() {
+                // Name-based coins
+                abcoin += (user.first_name.length + (user.last_name ? user.last_name.length : 0));
+
+                // Premium user bonus
+                if (user.is_premium) {
+                    abcoin += 2000;
+                }
+
+                // Username length bonus (if exists)
+                if (user.username) {
+                    abcoin += user.username.length * 10; // 10 coins per character
+                }
+
+                // Random normal user bonus
+                const randomBonus = Math.floor(Math.random() * (700 - 100 + 1)) + 100;
+                abcoin += randomBonus;
             }
 
-            // Add AB Coins based on age (Telegram gives user age data, but for simplicity, we'll assume you want to calculate based on current year)
-            const currentYear = new Date().getFullYear();
-            const birthYear = user.birthdate ? new Date(user.birthdate).getFullYear() : currentYear; // Assuming birthdate is available
-            const age = currentYear - birthYear;
-            abcoin += Math.floor(age * 100 / 100); // 100% of age as AB Coins
+            function showAbCoin() {
+                const display = document.getElementById("abcoin-display");
+                display.style.display = "block";
+                display.innerText = `You earned: ${abcoin} AB Coins`;
+                document.getElementById("claim-btn").style.display = "block";
+            }
 
-            // Display the loading dots and AB Coin calculation
-            let dotCount = 0;
-            const loadingDotsInterval = setInterval(() => {
-                document.getElementById('loading-dots').innerText = 'Loading' + '.'.repeat(dotCount);
-                dotCount = (dotCount + 1) % 4;
-            }, 750);
-
+            // Start loading animation and calculate AB Coins
             setTimeout(() => {
-                clearInterval(loadingDotsInterval);
-                document.getElementById('abcoin').innerText = abcoin;
-                document.getElementById('claim-button').style.display = 'block';
-            }, 3000);
+                calculateCoins();
+                showAbCoin();
+            }, 7000);
 
-            // Claim button logic
-            document.getElementById('claim-button').addEventListener('click', () => {
-                // Save the AB Coin to localStorage
-                localStorage.setItem('abcoin', abcoin);
-                // Redirect to home.html
-                window.location.href = 'home.html';
+            // Claim button functionality
+            document.getElementById("claim-btn").addEventListener("click", () => {
+                localStorage.setItem("abcoin", abcoin);
+                window.location.href = "home.html";
             });
-        } else {
-            document.getElementById('loading-dots').innerText = 'User information not available.';
         }
     </script>
 </body>
