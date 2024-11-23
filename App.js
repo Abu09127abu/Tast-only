@@ -1,153 +1,47 @@
-// Firebase Configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyAsyGiZ8R2QReR5ptT2lmnS8QEwZunxveA",
-    authDomain: "ab-coin-main-game.firebaseapp.com",
-    databaseURL: "https://ab-coin-main-game-default-rtdb.firebaseio.com",
-    projectId: "ab-coin-main-game",
-    storageBucket: "ab-coin-main-game.firebasestorage.app",
-    messagingSenderId: "353294390131",
-    appId: "1:353294390131:web:b57b57a2907e5d3a4aeb06"
-};
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Mini App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        .premium {
+            color: gold;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome, <span id="user-name"></span></h1>
+    <p>Your Telegram name: <span id="telegram-name"></span></p>
+    <p>Your status: <span id="status" class="premium"></span></p>
 
-// Variables for user login status
-let currentUser = null;
-let userCoins = 0;
+    <h2>Complete Your Tasks</h2>
+    <div id="tasks"></div>
 
-// Login Function
-function login() {
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
+    <script>
+        // Simulating the Telegram Web App object and query parameters for testing
+        const userName = 'JohnDoe'; // Simulated Telegram username
+        const isPremium = true; // Simulated Premium status
 
-    if (username === 'asrabu123' && password === 'asrabu123') {
-        // Admin Login
-        currentUser = 'admin';
-        showAdminPage();
-    } else if (username && password) {
-        // User Login
-        currentUser = username;
-        showUserPage();
-    } else {
-        document.getElementById('loginError').textContent = 'Invalid username or password';
-    }
-}
+        // Display user information
+        document.getElementById('user-name').innerText = userName;
+        document.getElementById('telegram-name').innerText = userName;
+        document.getElementById('status').innerText = isPremium ? 'Premium User' : 'Regular User';
 
-// Show Admin Page
-function showAdminPage() {
-    document.getElementById('loginPage').style.display = 'none';
-    document.getElementById('adminPage').style.display = 'block';
-    loadAdminTasks();
-}
-
-// Show User Page
-function showUserPage() {
-    document.getElementById('loginPage').style.display = 'none';
-    document.getElementById('userPage').style.display = 'block';
-    loadUserTasks();
-}
-
-// Navigation
-function navigateTo(page) {
-    const sections = document.querySelectorAll('.section');
-    sections.forEach(section => section.style.display = 'none');
-    document.getElementById(`${page}Page`).style.display = 'block';
-}
-
-// Earn Coin on Home page
-function earnCoin() {
-    userCoins += 10; // Add 10 coins for each click
-    alert(`You earned 10 coins! Total: ${userCoins} coins.`);
-    updateLeaderboard();
-}
-
-// Admin Logout
-function logout() {
-    currentUser = null;
-    document.getElementById('adminPage').style.display = 'none';
-    document.getElementById('loginPage').style.display = 'block';
-}
-
-// Task Page for User
-function loadUserTasks() {
-    const taskList = document.getElementById('taskList');
-    taskList.innerHTML = '<p>Loading tasks...</p>';
-    
-    firebase.database().ref('tasks').once('value', (snapshot) => {
-        taskList.innerHTML = '';
-        snapshot.forEach(taskSnapshot => {
-            const task = taskSnapshot.val();
-            const taskItem = document.createElement('div');
-            taskItem.innerHTML = `
-                <h3>${task.name}</h3>
-                <p>${task.description}</p>
-                <button onclick="completeTask('${taskSnapshot.key}')">Complete Task</button>
-            `;
-            taskList.appendChild(taskItem);
+        // Dynamically load tasks (just for example purposes)
+        const tasks = ['Task 1', 'Task 2', 'Task 3'];
+        const taskContainer = document.getElementById('tasks');
+        tasks.forEach(task => {
+            const taskElement = document.createElement('p');
+            taskElement.innerText = task;
+            taskContainer.appendChild(taskElement);
         });
-    });
-}
-
-// Complete Task
-function completeTask(taskId) {
-    alert(`Task ${taskId} completed! You earned 20 coins.`);
-    updateLeaderboard();
-}
-
-// Load Admin Tasks
-function loadAdminTasks() {
-    const adminTaskList = document.getElementById('adminTaskList');
-    adminTaskList.innerHTML = '<p>Loading tasks...</p>';
-
-    firebase.database().ref('tasks').once('value', (snapshot) => {
-        adminTaskList.innerHTML = '';
-        snapshot.forEach(taskSnapshot => {
-            const task = taskSnapshot.val();
-            const taskItem = document.createElement('div');
-            taskItem.innerHTML = `
-                <h3>${task.name}</h3>
-                <p>${task.description}</p>
-                <button onclick="deleteTask('${taskSnapshot.key}')">Delete Task</button>
-            `;
-            adminTaskList.appendChild(taskItem);
-        });
-    });
-}
-
-// Delete Task
-function deleteTask(taskId) {
-    if (confirm('Are you sure you want to delete this task?')) {
-        firebase.database().ref('tasks').child(taskId).remove();
-        loadAdminTasks();
-    }
-}
-
-// Update Leaderboard
-function updateLeaderboard() {
-    const leaderboard = document.getElementById('leaderboard');
-    leaderboard.innerHTML = '<p>Loading leaderboard...</p>';
-
-    firebase.database().ref('users').orderByChild('coins').once('value', (snapshot) => {
-        leaderboard.innerHTML = '<h3>Leaderboard</h3>';
-        snapshot.forEach(userSnapshot => {
-            const user = userSnapshot.val();
-            const userItem = document.createElement('div');
-            userItem.innerHTML = `${user.username}: ${user.coins} coins`;
-            leaderboard.appendChild(userItem);
-        });
-    });
-}
-
-// Add Task as Admin
-function addTask() {
-    const taskName = prompt("Enter task name:");
-    const taskDescription = prompt("Enter task description:");
-
-    const newTask = {
-        name: taskName,
-        description: taskDescription
-    };
-
-    firebase.database().ref('tasks').push(newTask);
-    loadAdminTasks();
-}
+    </script>
+</body>
+</html>
