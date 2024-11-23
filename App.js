@@ -1,47 +1,42 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Mini App</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 20px;
-        }
-        .premium {
-            color: gold;
-            font-weight: bold;
-        }
-    </style>
-</head>
-<body>
-    <h1>Welcome, <span id="user-name"></span></h1>
-    <p>Your Telegram name: <span id="telegram-name"></span></p>
-    <p>Your status: <span id="status" class="premium"></span></p>
+const express = require('express');
+const axios = require('axios');
+const app = express();
+const port = 3000;
 
-    <h2>Complete Your Tasks</h2>
-    <div id="tasks"></div>
+// Serve static files (HTML, CSS, etc.)
+app.use(express.static('public'));
 
-    <script>
-        // Simulating the Telegram Web App object and query parameters for testing
-        const userName = 'JohnDoe'; // Simulated Telegram username
-        const isPremium = true; // Simulated Premium status
+// Route to handle the Telegram login
+app.get('/auth', async (req, res) => {
+    const user = req.query.user; // Extract the Telegram user data from the query
+    const isPremium = req.query.premium === 'true'; // Check if the user is premium
 
-        // Display user information
-        document.getElementById('user-name').innerText = userName;
-        document.getElementById('telegram-name').innerText = userName;
-        document.getElementById('status').innerText = isPremium ? 'Premium User' : 'Regular User';
+    // For now, let's log the user info to console
+    console.log(`User: ${user}`);
+    console.log(`Premium: ${isPremium ? 'Yes' : 'No'}`);
 
-        // Dynamically load tasks (just for example purposes)
-        const tasks = ['Task 1', 'Task 2', 'Task 3'];
-        const taskContainer = document.getElementById('tasks');
-        tasks.forEach(task => {
-            const taskElement = document.createElement('p');
-            taskElement.innerText = task;
-            taskContainer.appendChild(taskElement);
-        });
-    </script>
-</body>
-</html>
+    // Render the app.html with the user data
+    res.send(`
+        <html>
+            <head>
+                <title>Telegram User Info</title>
+                <style>
+                    body { font-family: Arial, sans-serif; text-align: center; }
+                    .premium { color: gold; font-weight: bold; }
+                </style>
+            </head>
+            <body>
+                <h1>Welcome, ${user}</h1>
+                <p>Your Telegram name: ${user}</p>
+                <p>Your status: <span class="premium">${isPremium ? 'Premium User' : 'Regular User'}</span></p>
+                <p>Complete your tasks below!</p>
+                <div id="tasks"></div>
+            </body>
+        </html>
+    `);
+});
+
+// Start the server
+app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
+});
