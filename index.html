@@ -1,137 +1,123 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AB Coin Claim</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script type="module">
-        // Import Firebase modules
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
-
-        // Firebase config
-        const firebaseConfig = {
-            apiKey: "AIzaSyDwsGtshGQfrZ7y8IZ9RlRLY3HwjmUbIGc",
-            authDomain: "abcoin-d2c54.firebaseapp.com",
-            databaseURL: "https://abcoin-d2c54-default-rtdb.firebaseio.com",
-            projectId: "abcoin-d2c54",
-            storageBucket: "abcoin-d2c54.firebasestorage.app",
-            messagingSenderId: "942304733947",
-            appId: "1:942304733947:web:af7671c1c81a3dfd549e5e"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-
-        // Function to save data to Firebase
-        function saveToFirebase() {
-            const telegramData = JSON.parse(localStorage.getItem("telegram_user"));
-            const abcoin = localStorage.getItem("abcoin");
-
-            if (!telegramData || !abcoin) {
-                console.error("No valid data in localStorage to save.");
-                return;
-            }
-
-            const userId = telegramData.id; // Use Telegram chat ID as the unique user ID
-            const userRef = ref(database, `users/${userId}`);
-
-            set(userRef, {
-                name: `${telegramData.first_name} ${telegramData.last_name || ""}`.trim(),
-                username: telegramData.username || "N/A",
-                is_premium: telegramData.is_premium || false,
-                chat_id: telegramData.id,
-                abcoin: Number(abcoin),
-            })
-            .then(() => {
-                console.log("Data saved to Firebase successfully!");
-                loadFirebaseData(); // Load the data after saving
-            })
-            .catch((error) => {
-                console.error("Error saving data to Firebase:", error);
-            });
-        }
-
-        // Function to retrieve data from Firebase
-        function loadFirebaseData() {
-            const telegramData = JSON.parse(localStorage.getItem("telegram_user"));
-            const userId = telegramData.id;
-
-            const userRef = ref(database, `users/${userId}`);
-            get(userRef)
-            .then((snapshot) => {
-                if (snapshot.exists()) {
-                    const userData = snapshot.val();
-                    document.getElementById("firebase-name").innerText = `Name: ${userData.name}`;
-                    document.getElementById("firebase-username").innerText = `Username: @${userData.username}`;
-                    document.getElementById("firebase-chat-id").innerText = `Chat ID: ${userData.chat_id}`;
-                    document.getElementById("firebase-abcoin").innerText = `AB Coins: ${userData.abcoin}`;
-                    document.getElementById("firebase-premium").innerText = `Premium: ${userData.is_premium ? 'Yes' : 'No'}`;
-                } else {
-                    console.log("No data available for this user.");
-                }
-            })
-            .catch((error) => {
-                console.error("Error loading data from Firebase:", error);
-            });
-        }
-
-        // Trigger save function when the page loads
-        document.addEventListener("DOMContentLoaded", saveToFirebase);
-    </script>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-            background-color: #121212;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-        .data-display {
-            margin-top: 20px;
-            font-size: 18px;
-        }
-        #loading {
-            font-size: 20px;
-            color: white;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claim AB Coin</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: black;
+      color: white;
+      text-align: center;
+      padding: 50px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    #content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    #coinImage {
+      width: 120px;
+      height: 120px;
+      margin-bottom: 20px;
+    }
+    #loadingDots {
+      font-size: 30px;
+      letter-spacing: 5px;
+      margin-top: 20px;
+    }
+    #reward {
+      margin-top: 20px;
+      font-size: 24px;
+    }
+    #claimButton {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: white;
+      color: black;
+      border: 2px solid black;
+      cursor: pointer;
+      display: none;
+    }
+    #claimButton:hover {
+      background-color: #ddd;
+    }
+  </style>
 </head>
 <body>
-    <h1>AB Coin User Info</h1>
-    
-    <div id="loading">Loading your data...</div>
+  <div id="content">
+    <img src="coin.png" id="coinImage" alt="Coin">
+    <div id="loadingDots">.</div>
+    <div id="reward"></div>
+    <button id="claimButton">Claim Reward</button>
+  </div>
 
-    <div class="data-display" id="firebase-name"></div>
-    <div class="data-display" id="firebase-username"></div>
-    <div class="data-display" id="firebase-chat-id"></div>
-    <div class="data-display" id="firebase-abcoin"></div>
-    <div class="data-display" id="firebase-premium"></div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getDatabase, ref, set, update } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
-    <script>
-        window.Telegram.WebApp.ready();
-        const user = window.Telegram.WebApp.initDataUnsafe.user;
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAzxSL6N7FOXC8FuM6v11qJRODLIC4TJXE",
+      authDomain: "app-telegram-f4101.firebaseapp.com",
+      databaseURL: "https://app-telegram-f4101-default-rtdb.firebaseio.com",
+      projectId: "app-telegram-f4101",
+      storageBucket: "app-telegram-f4101.firebasestorage.app",
+      messagingSenderId: "67113105635",
+      appId: "1:67113105635:web:2d6049641a5b6ebca6edd6"
+    };
 
-        if (user) {
-            // Save user data to localStorage
-            const userData = {
-                first_name: user.first_name || "",
-                last_name: user.last_name || "",
-                username: user.username || "",
-                id: user.id || "",
-                is_premium: user.is_premium || false,
-            };
-            localStorage.setItem("telegram_user", JSON.stringify(userData));
-        } else {
-            document.getElementById("loading").innerText = "User not found. Please open from Telegram.";
-        }
-    </script>
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const loadingDots = document.getElementById("loadingDots");
+    let dotCount = 0;
+
+    // Check if already claimed
+    if (localStorage.getItem("abcoinClaimed")) {
+      window.location.href = "home.html";
+    }
+
+    // Animate loading dots
+    const loadingInterval = setInterval(() => {
+      dotCount = (dotCount % 3) + 1;
+      loadingDots.textContent = ".".repeat(dotCount);
+    }, 500);
+
+    setTimeout(() => {
+      clearInterval(loadingInterval);
+      claimReward();
+    }, Math.random() * 2000 + 3000);
+
+    async function claimReward() {
+      const reward = Math.floor(Math.random() * (7000 - 1000 + 1)) + 1000;
+      document.getElementById("reward").textContent = `You have earned ${reward} AB Coin!`;
+
+      const claimButton = document.getElementById("claimButton");
+      claimButton.style.display = "inline-block";
+
+      claimButton.addEventListener("click", async () => {
+        const abcoin = parseInt(localStorage.getItem("abcoin") || 0) + reward;
+        localStorage.setItem("abcoin", abcoin);
+        localStorage.setItem("abcoinClaimed", true);
+
+        const user = {
+          id: "12345678", // Replace with Telegram chat ID or dynamic data
+          abcoin,
+        };
+
+        await update(ref(db, `users/${user.id}`), { abcoin });
+        window.location.href = "home.html";
+      });
+    }
+  </script>
 </body>
 </html>
